@@ -1,20 +1,37 @@
-function getPostTitle(id) {
+function getPost(id) {
   return fetch(`https://dummyjson.com/posts/${id}`)
     .then((response) => {
-      if (!response.ok) {
-        throw new Error('Errore durante il recupero del post');
+      if (response.ok) {
+        return response.json();
       }
-      return response.json();
+      return null;
     })
-    .then((data) => {
-      return data.title;
-    });
+    .then((post) => {
+      if (!post) {
+        return null;
+      }
+      return fetch(`https://dummyjson.com/users/${post.userId}`)
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          return null;
+        })
+        .then((user) => {
+          return { ...post, user };
+        });
+    })
+    .catch(() => null);
 }
 
-getPostTitle(1)
-  .then((title) => {
-    console.log('Titolo del post:', title);
+getPost(1)
+  .then((post) => {
+    if (post) {
+      console.log('Post completo con autore:', post);
+    } else {
+      console.log('Errore nel recupero del post');
+    }
   })
   .catch((error) => {
-    console.error('Si è verificato un errore:', error);
+    console.log('Si è verificato un errore:', error);
   });
